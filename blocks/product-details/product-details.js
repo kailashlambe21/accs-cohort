@@ -121,6 +121,7 @@ export default async function decorate(block) {
         <div class="product-details__description"></div>
         <div class="product-details__attributes"></div>
           <div class="product-details__custom-attribute"></div>
+          <div class="product-details__manufacturer-attribute"></div>
       </div>
     </div>
   `);
@@ -141,6 +142,7 @@ export default async function decorate(block) {
   const $tagline = fragment.querySelector('.product-details__tagline');
   const $stock = fragment.querySelector('.product-details__stock');
   const $customAttribute = fragment.querySelector('.product-details__custom-attribute');
+  const $manufacturerAttribute = fragment.querySelector('.product-details__manufacturer-attribute');
 
   block.replaceChildren(fragment);
 
@@ -148,23 +150,36 @@ export default async function decorate(block) {
     $tagline.textContent = 'Free shipping on orders over $21.99!';
   }
 
-  events.on('pdp/data', (product) => {
-    if (!product) return;
-    if (product.inStock) {
+  events.on('pdp/data', (pdpProduct) => {
+    if (!pdpProduct) return;
+    if (pdpProduct.inStock) {
       $stock.textContent = '● In Stock';
       $stock.className = 'product-details__stock stock-badge stock-badge--in-stock';
     } else {
       $stock.textContent = '● Out of Stock';
       $stock.className = 'product-details__stock stock-badge stock-badge--out-of-stock';
     }
-    const value = product.metaTitle;
+    const value = pdpProduct.metaTitle;
     if (value) {
       $customAttribute.innerHTML = `
       <div class="custom-attribute">
-      <dt>Custom Attribute Label</dt>
+      <dt>Meta Title:</dt>
       <dd>${value}</dd>
       </div>
       `;
+    }
+
+    //manufacturer attribute example
+    const manufacturerAttr = pdpProduct.attributes?.find(attr => attr.id === 'manufacturer');
+    if (manufacturerAttr) {
+      $manufacturerAttribute.innerHTML = `
+        <div class="custom-attribute">
+          <dt>Manufacturer:</dt>
+          <dd>${manufacturerAttr.value}</dd>
+        </div>
+      `;
+    } else {
+      $manufacturerAttribute.innerHTML = 'Manufacturer information not available.';
     }
   }, { eager: true });
 

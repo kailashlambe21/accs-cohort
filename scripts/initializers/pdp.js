@@ -102,6 +102,14 @@ await initializeDropin(async () => {
   const models = {
     ProductDetails: {
       initialData: { ...product },
+      transformer: (rawData) => ({
+        // transformer receives raw GraphQL product data; map all non-empty attributes
+        // to ProductModel format so they are available in the pdp/data event,
+        // bypassing the drop-in's visible_in_pdp role filter.
+        attributes: (rawData?.attributes ?? [])
+          .filter(({ value }) => value !== '' && value != null)
+          .map(({ name, label, value }) => ({ id: name, label, value })),
+      }),
     },
   };
 
